@@ -303,7 +303,7 @@ DEFAULT_FEATURE_FLAGS: Dict[str, bool] = {
     # SUPERSET_WEBSERVER_DOMAINS for list of domains
     "ALLOW_DASHBOARD_DOMAIN_SHARDING": True,
     # Experimental feature introducing a client (browser) cache
-    "CLIENT_CACHE": False,
+    "CLIENT_CACHE": True,
     "DISABLE_DATASET_SOURCE_EDIT": False,
     "DYNAMIC_PLUGINS": False,
     "ENABLE_EXPLORE_JSON_CSRF_PROTECTION": False,
