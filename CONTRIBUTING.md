@@ -293,7 +293,9 @@ Often a product page will have the same title as the objects it contains. In thi
 - Create custom queries in SQL Lab then create dashboards
 
 #### **Exceptions to sentence case:
-- Input labels, buttons and tabs are all caps
+
+- Input labels, buttons and UI tabs are all caps
+- User input values (e.g. column names, SQL Lab tab names) should be in their original case
 
 ## Managing Issues and PRs
 
@@ -650,7 +652,7 @@ tox -e <environment>
 For example,
 
 ```bash
-tox -e py36
+tox -e py38
 ```
 
 Alternatively, you can run all tests in a single file via,
