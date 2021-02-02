@@ -1,4 +1,3 @@
-#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -15,13 +14,28 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
--r base.in
-flask-cors>=2.0.0
-mysqlclient==1.4.2.post1
-pillow>=7.0.0,<8.0.0
-pydruid>=0.6.1,<0.7
-pyhive[hive]>=0.6.1
-psycopg2-binary==2.8.5
-tableschema
-thrift>=0.11.0,<1.0.0
-pygithub>=1.54.1,<2.0.0
+from superset.exceptions import SupersetException
+
+
+class SupersetDBAPIError(SupersetException):
+    pass
+
+
+class SupersetDBAPIDataError(SupersetDBAPIError):
+    pass
+
+
+class SupersetDBAPIDatabaseError(SupersetDBAPIError):
+    pass
+
+
+class SupersetDBAPIDisconnectionError(SupersetDBAPIError):
+    pass
+
+
+class SupersetDBAPIOperationalError(SupersetDBAPIError):
+    pass
+
+
+class SupersetDBAPIProgrammingError(SupersetDBAPIError):
+    pass

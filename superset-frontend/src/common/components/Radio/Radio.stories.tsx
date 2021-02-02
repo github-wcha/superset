@@ -17,21 +17,40 @@
  * under the License.
  */
 import React from 'react';
-import PropTypes from 'prop-types';
-import Label from 'src/components/Label';
+import { useArgs } from '@storybook/client-api';
+import { Radio } from './index';
 
-import { STATE_TYPE_MAP } from '../constants';
-
-const propTypes = {
-  query: PropTypes.object.isRequired,
+export default {
+  title: 'Radio',
+  component: Radio,
+  parameters: {
+    controls: { hideNoControlsWarning: true },
+  },
+  argTypes: {
+    theme: {
+      table: {
+        disable: true,
+      },
+    },
+    checked: { control: 'boolean' },
+    disabled: { control: 'boolean' },
+  },
 };
 
-export default function QueryStateLabel({ query }) {
-  const type = STATE_TYPE_MAP[query.state];
+export const SupersetRadio = () => {
+  const [{ checked, ...rest }, updateArgs] = useArgs();
   return (
-    <Label className="m-r-3" type={type}>
-      {query.state}
-    </Label>
+    <Radio
+      checked={checked}
+      onChange={() => updateArgs({ checked: !checked })}
+      {...rest}
+    >
+      Example
+    </Radio>
   );
-}
-QueryStateLabel.propTypes = propTypes;
+};
+
+SupersetRadio.args = {
+  checked: false,
+  disabled: false,
+};
