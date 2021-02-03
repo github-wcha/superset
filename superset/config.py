@@ -315,7 +315,6 @@ DEFAULT_FEATURE_FLAGS: Dict[str, bool] = {
     "DASHBOARD_CACHE": False,
     "REMOVE_SLICE_LEVEL_LABEL_COLORS": False,
     "SHARE_QUERIES_VIA_KV_STORE": False,
-    "SIP_38_VIZ_REARCHITECTURE": False,
     "TAGGING_SYSTEM": False,
     "SQLLAB_BACKEND_PERSISTENCE": False,
     "LISTVIEWS_DEFAULT_CARD_VIEW": False,
@@ -854,7 +853,7 @@ ENABLE_JAVASCRIPT_CONTROLS = False
 # The id of a template dashboard that should be copied to every new user
 DASHBOARD_TEMPLATE_ID = None
 
-# A callable that allows altering the database conneciton URL and params
+# A callable that allows altering the database connection URL and params
 # on the fly, at runtime. This allows for things like impersonation or
 # arbitrary logic. For instance you can wire different users to
 # use different connection parameters, or pass their email address as the
@@ -1074,6 +1073,15 @@ GLOBAL_ASYNC_QUERIES_JWT_SECRET = "test-secret-change-me"
 GLOBAL_ASYNC_QUERIES_TRANSPORT = "polling"
 GLOBAL_ASYNC_QUERIES_POLLING_DELAY = 500
 
+# It's possible to add a dataset health check logic which is specific to your system.
+# It will get executed each time when user open a chart's explore view.
+DATASET_HEALTH_CHECK = None
+
+# -------------------------------------------------------------------
+# *                WARNING:  STOP EDITING  HERE                    *
+# -------------------------------------------------------------------
+# Don't add config values below this line since local configs won't be
+# able to override them.
 if CONFIG_PATH_ENV_VAR in os.environ:
     # Explicitly import config module that is not necessarily in pythonpath; useful
     # for case where app is being executed via pex.
@@ -1100,7 +1108,3 @@ elif importlib.util.find_spec("superset_config") and not is_test():
     except Exception:
         logger.exception("Found but failed to import local superset_config")
         raise
-
-# It's possible to add a dataset health check logic which is specific to your system.
-# It will get executed each time when user open a chart's explore view.
-DATASET_HEALTH_CHECK = None
