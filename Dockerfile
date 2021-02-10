@@ -127,4 +127,11 @@ USER root
 RUN cd /app \
     && pip install --no-cache -r requirements/docker.txt \
     && pip install --no-cache -r requirements/requirements-local.txt || true
+
+RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.29.0/geckodriver-v0.29.0-linux64.tar.gz
+RUN tar -x geckodriver -zf geckodriver-v0.29.0-linux64.tar.gz -O > /usr/bin/geckodriver
+RUN chmod +x /usr/bin/geckodriver
+RUN rm geckodriver-v0.29.0-linux64.tar.gz
+RUN apt-get update
+
 USER superset
