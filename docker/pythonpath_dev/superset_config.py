@@ -68,6 +68,10 @@ REDIS_RESULTS_DB = get_env_variable("REDIS_CELERY_DB", 1)
 RESULTS_BACKEND = FileSystemCache("/app/superset_home/sqllab")
 
 
+FEATURE_FLAGS = {
+    "ALERT_REPORTS": True,
+}
+
 class CeleryConfig(object):
     BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_CELERY_DB}"
     CELERY_IMPORTS = ("superset.sql_lab",)
@@ -78,6 +82,20 @@ class CeleryConfig(object):
 
 CELERY_CONFIG = CeleryConfig
 SQLLAB_CTAS_NO_LIMIT = True
+
+ENABLE_ALERTS = True
+ENABLE_SCHEDULED_EMAIL_REPORTS = True
+EMAIL_NOTIFICATIONS = True
+EMAIL_REPORTS_USER = 'ali.bakhodirov'
+
+SMTP_HOST = "smtp.gmail.com"
+SMTP_STARTTLS = True
+SMTP_SSL = False
+SMTP_USER = "zihaoroo@gmail.com"
+SMTP_PORT = 25
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
+SMTP_MAIL_FROM = "zihaoroo@gmail.com"
+
 
 #
 # Optionally import superset_config_docker.py (which will have been included on
