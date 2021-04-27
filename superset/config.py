@@ -198,7 +198,7 @@ APP_ICON = "/static/assets/images/superset-logo-horiz.png"
 APP_ICON_WIDTH = 126
 
 # Uncomment to specify where clicking the logo would take the user
-# e.g. setting it to '/welcome' would take the user to '/superset/welcome'
+# e.g. setting it to '/' would take the user to '/superset/welcome/'
 LOGO_TARGET_PATH = None
 
 # Enables SWAGGER UI for superset openapi spec
@@ -306,16 +306,25 @@ DEFAULT_FEATURE_FLAGS: Dict[str, bool] = {
     "CLIENT_CACHE": False,
     "DISABLE_DATASET_SOURCE_EDIT": False,
     "DYNAMIC_PLUGINS": False,
+    # For some security concerns, you may need to enforce CSRF protection on
+    # all query request to explore_json endpoint. In Superset, we use
+    # `flask-csrf <https://sjl.bitbucket.io/flask-csrf/>`_ add csrf protection
+    # for all POST requests, but this protection doesn't apply to GET method.
+    # When ENABLE_EXPLORE_JSON_CSRF_PROTECTION is set to true, your users cannot
+    # make GET request to explore_json. explore_json accepts both GET and POST request.
+    # See `PR 7935 <https://github.com/apache/superset/pull/7935>`_ for more details.
     "ENABLE_EXPLORE_JSON_CSRF_PROTECTION": False,
     "ENABLE_TEMPLATE_PROCESSING": False,
     "KV_STORE": False,
+    # When this feature is enabled, nested types in Presto will be
+    # expanded into extra columns and/or arrays. This is experimental,
+    # and doesn't work with all nested types.
     "PRESTO_EXPAND_DATA": False,
     # Exposes API endpoint to compute thumbnails
     "THUMBNAILS": False,
     "DASHBOARD_CACHE": False,
     "REMOVE_SLICE_LEVEL_LABEL_COLORS": False,
     "SHARE_QUERIES_VIA_KV_STORE": False,
-    "SIP_38_VIZ_REARCHITECTURE": False,
     "TAGGING_SYSTEM": False,
     "SQLLAB_BACKEND_PERSISTENCE": False,
     "LISTVIEWS_DEFAULT_CARD_VIEW": False,
@@ -329,6 +338,8 @@ DEFAULT_FEATURE_FLAGS: Dict[str, bool] = {
     # When True, this escapes HTML (rather than rendering it) in Markdown components
     "ESCAPE_MARKDOWN_HTML": False,
     "DASHBOARD_NATIVE_FILTERS": False,
+    "DASHBOARD_CROSS_FILTERS": False,
+    "DASHBOARD_NATIVE_FILTERS_SET": False,
     "GLOBAL_ASYNC_QUERIES": False,
     "VERSIONED_EXPORT": False,
     # Note that: RowLevelSecurityFilter is only given by default to the Admin role
@@ -343,6 +354,7 @@ DEFAULT_FEATURE_FLAGS: Dict[str, bool] = {
     "ALERT_REPORTS": False,
     # Enable experimental feature to search for other dashboards
     "OMNIBAR": False,
+    "DASHBOARD_RBAC": False,
 }
 
 # Set the default view to card/grid view if thumbnail support is enabled.
@@ -372,7 +384,7 @@ GET_FEATURE_FLAGS_FUNC: Optional[Callable[[Dict[str, bool]], Dict[str, bool]]] =
 
 # EXTRA_CATEGORICAL_COLOR_SCHEMES is used for adding custom categorical color schemes
 # example code for "My custom warm to hot" color scheme
-# EXTRA_CATEGORICAL_COLOR_SCHEMES =  [
+# EXTRA_CATEGORICAL_COLOR_SCHEMES = [
 #     {
 #         "id": 'myVisualizationColors',
 #         "description": '',
@@ -381,17 +393,35 @@ GET_FEATURE_FLAGS_FUNC: Optional[Callable[[Dict[str, bool]], Dict[str, bool]]] =
 #          ['#006699', '#009DD9', '#5AAA46', '#44AAAA', '#DDAA77', '#7799BB', '#88AA77',
 #          '#552288', '#5AAA46', '#CC7788', '#EEDD55', '#9977BB', '#BBAA44', '#DDCCDD']
 #     }]
-#
 
 # This is merely a default
 EXTRA_CATEGORICAL_COLOR_SCHEMES: List[Dict[str, Any]] = []
+
+# THEME_OVERRIDES is used for adding custom theme to superset
+# example code for "My theme" custom scheme
+# THEME_OVERRIDES = {
+#   "borderRadius": 4,
+#   "colors": {
+#     "primary": {
+#       "base": 'red',
+#     },
+#     "secondary": {
+#       "base": 'green',
+#     },
+#     "grayscale": {
+#       "base": 'orange',
+#     }
+#   }
+# }
+
+THEME_OVERRIDES: Dict[str, Any] = {}
 
 # EXTRA_SEQUENTIAL_COLOR_SCHEMES is used for adding custom sequential color schemes
 # EXTRA_SEQUENTIAL_COLOR_SCHEMES =  [
 #     {
 #         "id": 'warmToHot',
 #         "description": '',
-#         "isDiverging": true
+#         "isDiverging": True,
 #         "label": 'My custom warm to hot',
 #         "colors":
 #          ['#552288', '#5AAA46', '#CC7788', '#EEDD55', '#9977BB', '#BBAA44', '#DDCCDD',
@@ -604,7 +634,15 @@ class CeleryConfig:  # pylint: disable=too-few-public-methods
         "email_reports.schedule_hourly": {
             "task": "email_reports.schedule_hourly",
             "schedule": crontab(minute=1, hour="*"),
-        }
+        },
+        "reports.scheduler": {
+            "task": "reports.scheduler",
+            "schedule": crontab(minute="*", hour="*"),
+        },
+        "reports.prune_log": {
+            "task": "reports.prune_log",
+            "schedule": crontab(minute=0, hour=0),
+        },
     }
 
 
@@ -835,7 +873,7 @@ ENABLE_JAVASCRIPT_CONTROLS = False
 # The id of a template dashboard that should be copied to every new user
 DASHBOARD_TEMPLATE_ID = None
 
-# A callable that allows altering the database conneciton URL and params
+# A callable that allows altering the database connection URL and params
 # on the fly, at runtime. This allows for things like impersonation or
 # arbitrary logic. For instance you can wire different users to
 # use different connection parameters, or pass their email address as the
@@ -1031,6 +1069,12 @@ SIP_15_TOAST_MESSAGE = (
     'class="alert-link">here</a>.'
 )
 
+# Turn this key to False to disable ownership check on the old dataset MVC and
+# datasource API /datasource/save.
+#
+# Warning: This config key is deprecated and will be removed in version 2.0.0"
+OLD_API_CHECK_DATASET_OWNERSHIP = True
+
 # SQLA table mutator, every time we fetch the metadata for a certain table
 # (superset.connectors.sqla.models.SqlaTable), we call this hook
 # to allow mutating the object with this callback.
@@ -1055,6 +1099,19 @@ GLOBAL_ASYNC_QUERIES_JWT_SECRET = "test-secret-change-me"
 GLOBAL_ASYNC_QUERIES_TRANSPORT = "polling"
 GLOBAL_ASYNC_QUERIES_POLLING_DELAY = 500
 
+# It's possible to add a dataset health check logic which is specific to your system.
+# It will get executed each time when user open a chart's explore view.
+DATASET_HEALTH_CHECK = None
+
+# SQLalchemy link doc reference
+SQLALCHEMY_DOCS_URL = "https://docs.sqlalchemy.org/en/13/core/engines.html"
+SQLALCHEMY_DISPLAY_TEXT = "SQLAlchemy docs"
+
+# -------------------------------------------------------------------
+# *                WARNING:  STOP EDITING  HERE                    *
+# -------------------------------------------------------------------
+# Don't add config values below this line since local configs won't be
+# able to override them.
 if CONFIG_PATH_ENV_VAR in os.environ:
     # Explicitly import config module that is not necessarily in pythonpath; useful
     # for case where app is being executed via pex.
@@ -1081,7 +1138,3 @@ elif importlib.util.find_spec("superset_config") and not is_test():
     except Exception:
         logger.exception("Found but failed to import local superset_config")
         raise
-
-# It's possible to add a dataset health check logic which is specific to your system.
-# It will get executed each time when user open a chart's explore view.
-DATASET_HEALTH_CHECK = None

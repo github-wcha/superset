@@ -47,6 +47,7 @@ from superset import (
     security_manager,
 )
 from superset.connectors.sqla import models
+from superset.datasets.commands.exceptions import get_dataset_exist_error_msg
 from superset.errors import ErrorLevel, SupersetError, SupersetErrorType
 from superset.exceptions import (
     SupersetErrorException,
@@ -79,6 +80,8 @@ FRONTEND_CONF_KEYS = (
     "DISPLAY_MAX_ROW",
     "GLOBAL_ASYNC_QUERIES_TRANSPORT",
     "GLOBAL_ASYNC_QUERIES_POLLING_DELAY",
+    "SQLALCHEMY_DOCS_URL",
+    "SQLALCHEMY_DISPLAY_TEXT",
 )
 logger = logging.getLogger(__name__)
 
@@ -203,10 +206,6 @@ def handle_api_exception(
     return functools.update_wrapper(wraps, f)
 
 
-def get_datasource_exist_error_msg(full_name: str) -> str:
-    return __("Datasource %(name)s already exists", name=full_name)
-
-
 def validate_sqlatable(table: models.SqlaTable) -> None:
     """Checks the table existence in the database."""
     with db.session.no_autoflush:
@@ -216,7 +215,7 @@ def validate_sqlatable(table: models.SqlaTable) -> None:
             models.SqlaTable.database_id == table.database.id,
         )
         if db.session.query(table_query.exists()).scalar():
-            raise Exception(get_datasource_exist_error_msg(table.full_name))
+            raise Exception(get_dataset_exist_error_msg(table.full_name))
 
     # Fail before adding if the table can't be found
     try:
@@ -325,6 +324,7 @@ def common_bootstrap_payload() -> Dict[str, Any]:
         "feature_flags": get_feature_flags(),
         "extra_sequential_color_schemes": conf["EXTRA_SEQUENTIAL_COLOR_SCHEMES"],
         "extra_categorical_color_schemes": conf["EXTRA_CATEGORICAL_COLOR_SCHEMES"],
+        "theme_overrides": conf["THEME_OVERRIDES"],
         "menu_data": menu_data(),
     }
 
@@ -479,6 +479,7 @@ class CsvResponse(Response):  # pylint: disable=too-many-ancestors
     """
 
     charset = conf["CSV_EXPORT"].get("encoding", "utf-8")
+    default_mimetype = "text/csv"
 
 
 def check_ownership(obj: Any, raise_if_false: bool = True) -> bool:
