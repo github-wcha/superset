@@ -87,3 +87,5 @@ release.json
 
 # Translation binaries
 messages.mo
+
+superset-frontend/package-lock.json
