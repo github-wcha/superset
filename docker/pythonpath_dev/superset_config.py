@@ -43,9 +43,15 @@ def get_env_variable(var_name, default=None):
             raise EnvironmentError(error_msg)
 
 
-DATABASE_DIALECT = get_env_variFEATURE_FLAGS = {
-    "ALERT_REPORTS": True,
-}/%s:%s@%s:%s/%s" % (
+DATABASE_DIALECT = get_env_variable("DATABASE_DIALECT")
+DATABASE_USER = get_env_variable("DATABASE_USER")
+DATABASE_PASSWORD = get_env_variable("DATABASE_PASSWORD")
+DATABASE_HOST = get_env_variable("DATABASE_HOST")
+DATABASE_PORT = get_env_variable("DATABASE_PORT")
+DATABASE_DB = get_env_variable("DATABASE_DB")
+
+# The SQLAlchemy connection string.
+SQLALCHEMY_DATABASE_URI = "%s://%s:%s@%s:%s/%s" % (
     DATABASE_DIALECT,
     DATABASE_USER,
     DATABASE_PASSWORD,
