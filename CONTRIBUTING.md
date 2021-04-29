@@ -41,7 +41,11 @@ little bit helps, and credit will always be given.
       - [Reviewing](#reviewing)
       - [Merging](#merging)
       - [Post-merge Responsibility](#post-merge-responsibility)
-  - [Capitalization Guidelines](#capitalization-guidelines)
+  - [Design Guidelines](#design-guidelines)
+    - [Capitalization guidelines](#capitalization-guidelines)
+      - [Sentence case](#sentence-case)
+      - [How to refer to UI elements](#how-to-refer-to-ui-elements)
+      - [\*\*Exceptions to sentence case:](#exceptions-to-sentence-case)
   - [Managing Issues and PRs](#managing-issues-and-prs)
   - [Reporting a Security Vulnerability](#reporting-a-security-vulnerability)
   - [Revert Guidelines](#revert-guidelines)
@@ -51,11 +55,13 @@ little bit helps, and credit will always be given.
     - [Flask server](#flask-server)
       - [OS Dependencies](#os-dependencies)
       - [Logging to the browser console](#logging-to-the-browser-console)
-    - [Frontend Assets](#frontend-assets)
-      - [nvm and node](#nvm-and-node)
+    - [Frontend](#frontend)
       - [Prerequisite](#prerequisite)
-      - [Installing Dependencies](#installing-dependencies)
-      - [Building](#building)
+        - [nvm and node](#nvm-and-node)
+      - [Install dependencies](#install-dependencies)
+      - [Build assets](#build-assets)
+      - [Webpack dev server](#webpack-dev-server)
+      - [Other npm commands](#other-npm-commands)
       - [Docker (docker-compose)](#docker-docker-compose)
       - [Updating NPM packages](#updating-npm-packages)
       - [Feature flags](#feature-flags)
@@ -74,6 +80,7 @@ little bit helps, and credit will always be given.
   - [Translating](#translating)
     - [Enabling language selection](#enabling-language-selection)
     - [Extracting new strings for translation](#extracting-new-strings-for-translation)
+    - [Updating language files](#updating-language-files)
     - [Creating a new language dictionary](#creating-a-new-language-dictionary)
   - [Tips](#tips)
     - [Adding a new datasource](#adding-a-new-datasource)
@@ -192,6 +199,8 @@ The purpose is to separate problem from possible solutions.
 
 In general, small PRs are always easier to review than large PRs. The best practice is to break your work into smaller independent PRs and refer to the same issue. This will greatly reduce turnaround time.
 
+If you wish to share your work which is not ready to merge yet, create a [Draft PR](https://github.blog/2019-02-14-introducing-draft-pull-requests/). This will enable maintainers and the CI runner to prioritize mature PR's.
+
 Finally, never submit a PR that will put master branch in broken state. If the PR is part of multiple PRs to complete a large feature and cannot work on its own, you can create a feature branch and merge all related PRs into the feature branch before creating a PR from feature branch to master.
 
 ### Protocol
@@ -200,6 +209,7 @@ Finally, never submit a PR that will put master branch in broken state. If the P
 
 - Fill in all sections of the PR template.
 - Title the PR with one of the following semantic prefixes (inspired by [Karma](http://karma-runner.github.io/0.10/dev/git-commit-msg.html])):
+
   - `feat` (new feature)
   - `fix` (bug fix)
   - `docs` (changes to the documentation)
@@ -217,6 +227,7 @@ Finally, never submit a PR that will put master branch in broken state. If the P
     - `fix(chart-api): cached-indicator always shows value is cached`
 
 - Add prefix `[WIP]` to title if not ready for review (WIP = work-in-progress). We recommend creating a PR with `[WIP]` first and remove it once you have passed CI test and read through your code changes at least once.
+- If you believe your PR contributes a potentially breaking change, put a `!` after the semantic prefix but before the colon in the PR title, like so: `feat!: Added foo functionality to bar`
 - **Screenshots/GIFs:** Changes to user interface require before/after screenshots, or GIF for interactions
   - Recommended capture tools ([Kap](https://getkap.co/), [LICEcap](https://www.cockos.com/licecap/), [Skitch](https://download.cnet.com/Skitch/3000-13455_4-189876.html))
   - If no screenshot is provided, the committers will mark the PR with `need:screenshot` label and will not review until screenshot is provided.
@@ -248,30 +259,31 @@ Finally, never submit a PR that will put master branch in broken state. If the P
 - Project maintainers may contact the PR author if new issues are introduced by the PR.
 - Project maintainers may revert your changes if a critical issue is found, such as breaking master branch CI.
 
-## Capitalization Guidelines
+## Design Guidelines
 
-### Sentence case
+### Capitalization guidelines
+
+#### Sentence case
 
 Use sentence-case capitalization for everything in the UI (except these \*\*).
 
 Sentence case is predominantly lowercase. Capitalize only the initial character of the first word, and other words that require capitalization, like:
 
-- Proper nouns. Objects in the product are not considered proper nouns e.g. dashboards, charts, saved queries etc. Proprietary feature names eg. SQL Lab, Preset Manager are considered proper nouns
-- Acronyms (e.g. CSS, HTML)
+- **Proper nouns.** Objects in the product _are not_ considered proper nouns e.g. dashboards, charts, saved queries etc. Proprietary feature names eg. SQL Lab, Preset Manager _are_ considered proper nouns
+- **Acronyms** (e.g. CSS, HTML)
 - When referring to **UI labels that are themselves capitalized** from sentence case (e.g. page titles - Dashboards page, Charts page, Saved queries page, etc.)
 - User input that is reflected in the UI. E.g. a user-named a dashboard tab
 
-#### Sentence case vs. Title case:
-
+**Sentence case vs. Title case:**
 Title case: "A Dog Takes a Walk in Paris"
 Sentence case: "A dog takes a walk in Paris"
 
-#### Why sentence case?
+**Why sentence case?**
 
 - It’s generally accepted as the quickest to read
 - It’s the easiest form to distinguish between common and proper nouns
 
-### How to refer to UI elements
+#### How to refer to UI elements
 
 When writing about a UI element, use the same capitalization as used in the UI.
 
@@ -290,9 +302,10 @@ Often a product page will have the same title as the objects it contains. In thi
 - Queries that you save will appear on the Saved queries page
 - Create custom queries in SQL Lab then create dashboards
 
-### \*\*Exceptions to sentence case:
+#### \*\*Exceptions to sentence case:
 
-- Input labels, buttons and tabs are all caps
+- Input labels, buttons and UI tabs are all caps
+- User input values (e.g. column names, SQL Lab tab names) should be in their original case
 
 ## Managing Issues and PRs
 
@@ -329,6 +342,8 @@ Committers may also update title to reflect the issue/PR content if the author-p
 If the PR passes CI tests and does not have any `need:` labels, it is ready for review, add label `review` and/or `design-review`.
 
 If an issue/PR has been inactive for >=30 days, it will be closed. If it does not have any status label, add `inactive`.
+
+When creating a PR, if you're aiming to have it included in a specific release, please tag it with the version label. For example, to have a PR considered for inclusion in Superset 1.1 use the label `v1.1`.
 
 ## Reporting a Security Vulnerability
 
@@ -388,12 +403,12 @@ For example, the image referenced above actually lives in `superset-frontend/ima
 
 #### OS Dependencies
 
-Make sure your machine meets the [OS dependencies](https://superset.apache.org/installation.html#os-dependencies) before following these steps.
+Make sure your machine meets the [OS dependencies](https://superset.apache.org/docs/installation/installing-superset-from-scratch#os-dependencies) before following these steps.
 
 Ensure Python versions >3.7, Then proceed with:
 
 ```bash
-# Create a virtual environemnt and activate it (recommended)
+# Create a virtual environment and activate it (recommended)
 python3 -m venv venv # setup a python3 virtualenv
 source venv/bin/activate
 
@@ -452,13 +467,15 @@ app.logger.error('An exception occurred!')
 app.logger.info(form_data)
 ```
 
-### Frontend Assets
+### Frontend
 
-Frontend assets (TypeScript, JavaScript, CSS, and images) must be compiled in order to properly display the web UI. The `superset-frontend` directory contains all NPM-managed front end assets. Note that there are additional frontend assets bundled with Flask-Appbuilder (e.g. jQuery and bootstrap); these are not managed by NPM, and may be phased out in the future.
+Frontend assets (TypeScript, JavaScript, CSS, and images) must be compiled in order to properly display the web UI. The `superset-frontend` directory contains all NPM-managed frontend assets. Note that for some legacy pages there are additional frontend assets bundled with Flask-Appbuilder (e.g. jQuery and bootstrap). These are not managed by NPM and may be phased out in the future.
 
-#### nvm and node
+#### Prerequisite
 
-First, be sure you are using recent versions of NodeJS and npm. We recommend using [nvm](https://github.com/nvm-sh/nvm) to manage your node environment:
+##### nvm and node
+
+First, be sure you are using recent versions of Node.js and npm. We recommend using [nvm](https://github.com/nvm-sh/nvm) to manage your node environment:
 
 ```bash
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.0/install.sh | bash
@@ -470,11 +487,15 @@ nvm use
 
 For those interested, you may also try out [avn](https://github.com/nvm-sh/nvm#deeper-shell-integration) to automatically switch to the node version that is required to run Superset frontend.
 
-#### Prerequisite
+We have upgraded our `package-lock.json` to use `lockfileversion: 2` from npm 7, so please make sure you have installed npm 7, too:
 
-#### Installing Dependencies
+```bash
+npm install -g npm@7
+```
 
-Install third-party dependencies listed in `package.json`:
+#### Install dependencies
+
+Install third-party dependencies listed in `package.json` via:
 
 ```bash
 # From the root of the repository
@@ -484,40 +505,40 @@ cd superset-frontend
 npm ci
 ```
 
-#### Building
+#### Build assets
 
-You can run the Webpack dev server (in a separate terminal from Flask), which runs on port 9000 and proxies non-asset requests to the Flask server on port 8088. After pointing your browser to `http://localhost:9000`, updates to asset sources will be reflected in-browser without a refresh.
+There are three types of assets you can build:
+
+1. `npm run build`: the production assets, CSS/JSS minified and optimized
+2. `npm run dev-server`: local development assets, with sourcemaps and hot refresh support
+3. `npm run build-instrumented`: instrumented application code for collecting code coverage from Cypress tests
+
+#### Webpack dev server
+
+The dev server by default starts at `http://localhost:9000` and proxies the backend requests to `http://localhost:8080`. It's possible to change these settings:
 
 ```bash
-# Run the dev server
+# Start the dev server at http://localhost:9000
 npm run dev-server
 
 # Run the dev server on a non-default port
 npm run dev-server -- --devserverPort=9001
 
-# Run the dev server proxying to a Flask server on a non-default port
+# Proxy backend requests to a Flask server running on a non-default port
 npm run dev-server -- --supersetPort=8081
 
-# Or proxy it to a remote backend so you can test frontend changes without
-# starting the backend locally
+# Proxy to a remote backend but serve local assets
 npm run dev-server -- --superset=https://superset-dev.example.com
 ```
 
-Alternatively you can use one of the following commands.
+The `--superset=` option is useful in case you want to debug a production issue or have to setup Superset behind a firewall. It allows you to run Flask server in another environment while keep assets building locally for the best developer experience.
 
-```bash
-# Start a watcher that recompiles your assets as you modify them (but have to manually reload your browser to see changes.)
-npm run dev
+#### Other npm commands
 
-# Compile the TypeScript/JavaScript and CSS in production/optimized mode for official releases
-npm run prod
-```
+Alternatively, there are other NPM commands you may find useful:
 
-If you run this service from somewhere other than your local machine, you may need to add hostname value to webpack.config.js at .devServer.public specifying the endpoint at which you will access the app. For example: myhost:9001. For convenience you may want to install webpack, webpack-cli and webpack-dev-server globally so that you can run them directly:
-
-```bash
-npm install --global webpack webpack-cli webpack-dev-server
-```
+1. `npm run build-dev`: build assets in development mode.
+2. `npm run dev`: built dev assets in watch mode, will automatically rebuild when a file changes
 
 #### Docker (docker-compose)
 
@@ -543,13 +564,15 @@ If you want to use the same flag in the client code, also add it to the FeatureF
 
 ```typescript
 export enum FeatureFlag {
-  SCOPED_FILTER = 'SCOPED_FILTER',
+  SCOPED_FILTER = "SCOPED_FILTER",
 }
 ```
 
 `superset/config.py` contains `DEFAULT_FEATURE_FLAGS` which will be overwritten by
 those specified under FEATURE_FLAGS in `superset_config.py`. For example, `DEFAULT_FEATURE_FLAGS = { 'FOO': True, 'BAR': False }` in `superset/config.py` and `FEATURE_FLAGS = { 'BAR': True, 'BAZ': True }` in `superset_config.py` will result
 in combined feature flags of `{ 'FOO': True, 'BAR': True, 'BAZ': True }`.
+
+The current status of the usability of each flag (stable vs testing, etc) can be found in `RESOURCES/FEATURE_FLAGS.md`.
 
 ## Git Hooks
 
@@ -560,13 +583,19 @@ pip3 install -r requirements/integration.txt
 pre-commit install
 ```
 
+Alternatively it is possible to run pre-commit via tox:
+
+```bash
+tox -e pre-commit
+```
+
 ## Linting
 
 Lint the project with:
 
 ```bash
 # for python
-tox -e flake8
+tox -e pylint
 
 # for frontend
 cd superset-frontend
@@ -643,7 +672,7 @@ tox -e <environment>
 For example,
 
 ```bash
-tox -e py36
+tox -e py38
 ```
 
 Alternatively, you can run all tests in a single file via,
@@ -775,7 +804,7 @@ In TypeScript/JavaScript, the technique is similar:
 we import `t` (simple translation), `tn` (translation containing a number).
 
 ```javascript
-import { t, tn } from '@superset-ui/translation';
+import { t, tn } from "@superset-ui/translation";
 ```
 
 ### Enabling language selection
@@ -827,7 +856,7 @@ To convert all PO files to formatted JSON files you can use the `po2json.sh` scr
 ```
 
 If you get errors running `po2json`, you might be running the Ubuntu package with the same
-name, rather than the NodeJS package (they have a different format for the arguments). If
+name, rather than the Node.js package (they have a different format for the arguments). If
 there is a conflict, you may need to update your `PATH` environment variable or fully qualify
 the executable path (e.g. `/usr/local/bin/po2json` instead of `po2json`).
 If you get a lot of `[null,***]` in `messages.json`, just delete all the `null,`.
@@ -885,6 +914,9 @@ yarn build
 Then use `npm link` to create symlinks of the plugins/superset-ui packages you want to edit in `superset-frontend/node_modules`:
 
 ```bash
+# Since npm 7, you have to install plugin dependencies separately, too
+cd ../../superset-ui/plugins/[PLUGIN NAME] && npm install --legacy-peer-deps
+
 cd superset/superset-frontend
 npm link ../../superset-ui/plugins/[PLUGIN NAME]
 
@@ -899,7 +931,6 @@ When `superset-ui` packages are linked with `npm link`, the dev server will auto
 
 Note that every time you do `npm install`, you will lose the symlink(s) and may have to run `npm link` again.
 
-
 ### Visualization Plugins
 
 The topic of authoring new plugins, whether you'd like to contribute
@@ -907,15 +938,16 @@ it back or not has been well documented in the
 [So, You Want to Build a Superset Viz Plugin...](https://preset.io/blog/2020-07-02-hello-world/) blog post
 
 To contribute a plugin to Superset-UI, your plugin must meet the following criteria:
-* The plugin should be applicable to the community at large, not a particularly specialized use case
-* The plugin should be written with TypeScript
-* The plugin should contain sufficient unit/e2e tests
-* The plugin should use appropriate namespacing, e.g. a folder name of `plugin-chart-whatever` and a package name of `@superset-ui/plugin-chart-whatever`
-* The plugin should use them variables via Emotion, as passed in by the ThemeProvider
-* The plugin should provide adequate error handling (no data returned, malformatted data, invalid controls, etc.)
-* The plugin should contain documentation in the form of a populated `README.md` file
-* The plugin should have a meaningful and unique icon
-* Above all else, the plugin should come with a *commitment to maintenance* from the original author(s)
+
+- The plugin should be applicable to the community at large, not a particularly specialized use case
+- The plugin should be written with TypeScript
+- The plugin should contain sufficient unit/e2e tests
+- The plugin should use appropriate namespacing, e.g. a folder name of `plugin-chart-whatever` and a package name of `@superset-ui/plugin-chart-whatever`
+- The plugin should use them variables via Emotion, as passed in by the ThemeProvider
+- The plugin should provide adequate error handling (no data returned, malformatted data, invalid controls, etc.)
+- The plugin should contain documentation in the form of a populated `README.md` file
+- The plugin should have a meaningful and unique icon
+- Above all else, the plugin should come with a _commitment to maintenance_ from the original author(s)
 
 Submissions will be considered for submission (or removal) on a case-by-case basis.
 
@@ -1081,22 +1113,22 @@ Note not all fields are correctly catagorized. The fields vary based on visualiz
 
 ### Time
 
-| Field                  | Type            | Notes                                 |
-| ---------------------- | --------------- | ------------------------------------- |
-| `druid_time_origin`    | _string_        | The Druid **Origin** widget           |
-| `granularity`          | _string_        | The Druid **Time Granularity** widget |
-| `granularity_sqla`     | _string_        | The SQLA **Time Column** widget       |
-| `time_grain_sqla`      | _string_        | The SQLA **Time Grain** widget        |
-| `time_range`           | _string_        | The **Time range** widget             |
+| Field               | Type     | Notes                                 |
+| ------------------- | -------- | ------------------------------------- |
+| `druid_time_origin` | _string_ | The Druid **Origin** widget           |
+| `granularity`       | _string_ | The Druid **Time Granularity** widget |
+| `granularity_sqla`  | _string_ | The SQLA **Time Column** widget       |
+| `time_grain_sqla`   | _string_ | The SQLA **Time Grain** widget        |
+| `time_range`        | _string_ | The **Time range** widget             |
 
 ### GROUP BY
 
-| Field                     | Type            | Notes                       |
-| ------------------------- | --------------- | --------------------------- |
-| `metrics`                 | _array(string)_ | See Query section           |
-| `order_asc`               | -               | See Query section           |
-| `row_limit`               | -               | See Query section           |
-| `timeseries_limit_metric` | -               | See Query section           |
+| Field                     | Type            | Notes             |
+| ------------------------- | --------------- | ----------------- |
+| `metrics`                 | _array(string)_ | See Query section |
+| `order_asc`               | -               | See Query section |
+| `row_limit`               | -               | See Query section |
+| `timeseries_limit_metric` | -               | See Query section |
 
 ### NOT GROUPED BY
 
@@ -1114,9 +1146,9 @@ Note not all fields are correctly catagorized. The fields vary based on visualiz
 
 ### Y Axis 2
 
-| Field             | Type     | Notes                                               |
-| ----------------- | -------- | --------------------------------------------------- |
-| `metric_2`        | -        | The **Right Axis Metric** widget. See Query section |
+| Field      | Type | Notes                                               |
+| ---------- | ---- | --------------------------------------------------- |
+| `metric_2` | -    | The **Right Axis Metric** widget. See Query section |
 
 ### Query
 
@@ -1135,68 +1167,68 @@ The `metric` (or equivalent) and `timeseries_limit_metric` fields are all compos
 
 ### Chart Options
 
-| Field                 | Type      | Notes                                            |
-| --------------------- | --------- | ------------------------------------------------ |
-| `color_picker`        | _object_  | The **Fixed Color** widget                       |
-| `label_colors`        | _object_  | The **Color Scheme** widget                      |
-| `normalized`          | _boolean_ | The **Normalized** widget                        |
+| Field          | Type      | Notes                       |
+| -------------- | --------- | --------------------------- |
+| `color_picker` | _object_  | The **Fixed Color** widget  |
+| `label_colors` | _object_  | The **Color Scheme** widget |
+| `normalized`   | _boolean_ | The **Normalized** widget   |
 
 ### Y Axis
 
-| Field               | Type            | Notes                        |
-| ------------------- | --------------- | ---------------------------- |
-| `y_axis_2_label`    | _N/A_           | _Deprecated?_                |
-| `y_axis_format`     | _string_        | The **Y Axis Format** widget |
-| `y_axis_zero`       | _N/A_           | _Deprecated?_                |
+| Field            | Type     | Notes                        |
+| ---------------- | -------- | ---------------------------- |
+| `y_axis_2_label` | _N/A_    | _Deprecated?_                |
+| `y_axis_format`  | _string_ | The **Y Axis Format** widget |
+| `y_axis_zero`    | _N/A_    | _Deprecated?_                |
 
 Note the `y_axis_format` is defined under various section for some charts.
 
 ### Other
 
-| Field          | Type     | Notes        |
-| -------------- | -------- | ------------ |
-| `color_scheme` | _string_ |              |
+| Field          | Type     | Notes |
+| -------------- | -------- | ----- |
+| `color_scheme` | _string_ |       |
 
 ### Unclassified
 
-| Field                           | Type  | Notes |
-| ------------------------------- | ----- | ----- |
-| `add_to_dash`                   | _N/A_ |       |
-| `code`                          | _N/A_ |       |
-| `collapsed_fieldsets`           | _N/A_ |       |
-| `comparison type`               | _N/A_ |       |
-| `country_fieldtype`             | _N/A_ |       |
-| `default_filters`               | _N/A_ |       |
-| `entity`                        | _N/A_ |       |
-| `expanded_slices`               | _N/A_ |       |
-| `extra_filters`                 | _N/A_ |       |
-| `filter_immune_slice_fields`    | _N/A_ |       |
-| `filter_immune_slices`          | _N/A_ |       |
-| `flt_col_0`                     | _N/A_ |       |
-| `flt_col_1`                     | _N/A_ |       |
-| `flt_eq_0`                      | _N/A_ |       |
-| `flt_eq_1`                      | _N/A_ |       |
-| `flt_op_0`                      | _N/A_ |       |
-| `flt_op_1`                      | _N/A_ |       |
-| `goto_dash`                     | _N/A_ |       |
-| `import_time`                   | _N/A_ |       |
-| `label`                         | _N/A_ |       |
-| `linear_color_scheme`           | _N/A_ |       |
-| `new_dashboard_name`            | _N/A_ |       |
-| `new_slice_name`                | _N/A_ |       |
-| `num_period_compare`            | _N/A_ |       |
-| `period_ratio_type`             | _N/A_ |       |
-| `perm`                          | _N/A_ |       |
-| `rdo_save`                      | _N/A_ |       |
-| `refresh_frequency`             | _N/A_ |       |
-| `remote_id`                     | _N/A_ |       |
-| `resample_fillmethod`           | _N/A_ |       |
-| `resample_how`                  | _N/A_ |       |
-| `rose_area_proportion`          | _N/A_ |       |
-| `save_to_dashboard_id`          | _N/A_ |       |
-| `schema`                        | _N/A_ |       |
-| `series`                        | _N/A_ |       |
-| `show_bubbles`                  | _N/A_ |       |
-| `slice_name`                    | _N/A_ |       |
-| `timed_refresh_immune_slices`   | _N/A_ |       |
-| `userid`                        | _N/A_ |       |
+| Field                         | Type  | Notes |
+| ----------------------------- | ----- | ----- |
+| `add_to_dash`                 | _N/A_ |       |
+| `code`                        | _N/A_ |       |
+| `collapsed_fieldsets`         | _N/A_ |       |
+| `comparison type`             | _N/A_ |       |
+| `country_fieldtype`           | _N/A_ |       |
+| `default_filters`             | _N/A_ |       |
+| `entity`                      | _N/A_ |       |
+| `expanded_slices`             | _N/A_ |       |
+| `extra_filters`               | _N/A_ |       |
+| `filter_immune_slice_fields`  | _N/A_ |       |
+| `filter_immune_slices`        | _N/A_ |       |
+| `flt_col_0`                   | _N/A_ |       |
+| `flt_col_1`                   | _N/A_ |       |
+| `flt_eq_0`                    | _N/A_ |       |
+| `flt_eq_1`                    | _N/A_ |       |
+| `flt_op_0`                    | _N/A_ |       |
+| `flt_op_1`                    | _N/A_ |       |
+| `goto_dash`                   | _N/A_ |       |
+| `import_time`                 | _N/A_ |       |
+| `label`                       | _N/A_ |       |
+| `linear_color_scheme`         | _N/A_ |       |
+| `new_dashboard_name`          | _N/A_ |       |
+| `new_slice_name`              | _N/A_ |       |
+| `num_period_compare`          | _N/A_ |       |
+| `period_ratio_type`           | _N/A_ |       |
+| `perm`                        | _N/A_ |       |
+| `rdo_save`                    | _N/A_ |       |
+| `refresh_frequency`           | _N/A_ |       |
+| `remote_id`                   | _N/A_ |       |
+| `resample_fillmethod`         | _N/A_ |       |
+| `resample_how`                | _N/A_ |       |
+| `rose_area_proportion`        | _N/A_ |       |
+| `save_to_dashboard_id`        | _N/A_ |       |
+| `schema`                      | _N/A_ |       |
+| `series`                      | _N/A_ |       |
+| `show_bubbles`                | _N/A_ |       |
+| `slice_name`                  | _N/A_ |       |
+| `timed_refresh_immune_slices` | _N/A_ |       |
+| `userid`                      | _N/A_ |       |

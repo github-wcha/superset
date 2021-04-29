@@ -23,13 +23,38 @@ This file documents any backwards-incompatible changes in Superset and
 assists people when migrating to a new version.
 
 ## Next
-# Breaking Changes
-# Potential Downtime
-# Deprecations
+### Breaking Changes
+### Potential Downtime
+### Deprecations
+### Other
+
+## 1.1.0
+
+### Breaking Changes
+
+- This is the first release since we adopted semantic versioning ([SIP-57](https://github.com/apache/superset/issues/12566)). There are no breaking changes in 1.1.0 since this is a minor release.
+
+### Potential Downtime
+
+- [13111](https://github.com/apache/superset/pull/13111) has a database migration that replaces `directed_force` charts with newer `graph_chart` charts based on Apache ECharts.
+- [13216](https://github.com/apache/superset/pull/13216) adds a UUID column to models that are missing it. The original migration script that added the column would incorrectly complete when the column couldn't be added, resulting in a broken schema. The script is optimized for MySQL and Postgres, so depending on the database and the number of objects this migration might take considerable time.
+- [12960](https://github.com/apache/superset/pull/12960) populates the granularity parameter in existing charts. Depending on the number of charts without a `granularity` or `granularity_sqla param` this might take considerable time.
+- [13052](https://github.com/apache/superset/pull/13052) updates the label in existing pie charts, setting `label_type` from `pie_label_type`. Depending on the number of pie charts this might take considerable time.
+- [12680](https://github.com/apache/superset/pull/12680) creates a new table, `dashboard_roles`, for role based dashboard level access.
+- [12552](https://github.com/apache/superset/pull/12552) updates charts that have the time range defined using "until" and "since". Depending on the number of charts this might take considerable time.
+
+### Deprecations
+
+- [12552](https://github.com/apache/superset/pull/12552) removes the use of unclear time offsets, eg, "30 days". An error message is displayed if the user doesn't specify "ago" or "later", instructing the user of the correct format.
+- [12627](https://github.com/apache/superset/pull/12627) deprecates the legacy alerts module.
+
+### Other
+
+- [shillelagh](https://github.com/betodealmeida/shillelagh/) is now the recommended module to connect Superset to Google Spreadsheets since it's more robust and has extensive test coverage. You should uninstall the `gsheetsdb` module and install the `shillelagh` module in its place. Shillelagh is a drop-in replacement, so no modifications are needed to be done on existing queries, datasets, or charts.
 
 ## 1.0.0
 
-# Breaking Changes
+### Breaking Changes
 - [11509](https://github.com/apache/superset/pull/12491): Dataset metadata updates check user ownership, only owners or an Admin are allowed.
 - Security simplification (SIP-19), the following permission domains were simplified:
     - [12072](https://github.com/apache/superset/pull/12072): `Query` with `can_read`, `can_write`
@@ -63,7 +88,7 @@ to expose in your environment in superset_config.py
 
 - [11172](https://github.com/apache/superset/pull/11172): Breaking change: SQL templating is turned off by default. To turn it on set `ENABLE_TEMPLATE_PROCESSING` to True on `FEATURE_FLAGS`
 
-# Potential Downtime
+### Potential Downtime
 - [11920](https://github.com/apache/superset/pull/11920): Undos the DB migration from [11714](https://github.com/apache/superset/pull/11714) to prevent adding new columns to the logs table. Deploying a sha between these two PRs may result in locking your DB.
 
 - [11714](https://github.com/apache/superset/pull/11714): Logs
@@ -73,7 +98,7 @@ database more.
 
 - [11098](https://github.com/apache/superset/pull/11098): includes a database migration that adds a `uuid` column to most models, and updates `Dashboard.position_json` to include chart UUIDs. Depending on number of objects, the migration may take up to 5 minutes, requiring planning for downtime.
 
-# Deprecations
+### Deprecations
 - [11155](https://github.com/apache/superset/pull/11155): The `FAB_UPDATE_PERMS` config parameter is no longer required as the Superset application correctly informs FAB under which context permissions should be updated.
 
 ## 0.38.0

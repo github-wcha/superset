@@ -18,7 +18,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { styled, t } from '@superset-ui/core';
-import { Collapse } from 'src/common/components';
+import Collapse from 'src/common/components/Collapse';
 import {
   ColumnOption,
   MetricOption,
@@ -27,8 +27,9 @@ import {
 } from '@superset-ui/chart-controls';
 import { debounce } from 'lodash';
 import { matchSorter, rankings } from 'match-sorter';
-import { ExploreActions } from '../actions/exploreActions';
-import Control from './Control';
+import { FAST_DEBOUNCE } from 'src/constants';
+import { ExploreActions } from 'src/explore/actions/exploreActions';
+import Control from 'src/explore/components/Control';
 
 interface DatasourceControl extends ControlConfig {
   datasource?: DatasourceMeta;
@@ -51,44 +52,9 @@ const DatasourceContainer = styled.div`
   max-height: 100%;
   .ant-collapse {
     height: auto;
-    border-bottom: 1px solid ${({ theme }) => theme.colors.grayscale.light2};
-    padding-bottom: ${({ theme }) => theme.gridUnit * 2}px;
-    background-color: ${({ theme }) => theme.colors.grayscale.light4};
-  }
-  .ant-collapse > .ant-collapse-item > .ant-collapse-header {
-    padding-left: ${({ theme }) => theme.gridUnit * 2}px;
-    padding-bottom: 0px;
-  }
-  .ant-collapse-item {
-    background-color: ${({ theme }) => theme.colors.grayscale.light4};
-    .anticon.anticon-right.ant-collapse-arrow > svg {
-      transform: rotate(90deg) !important;
-      margin-right: ${({ theme }) => theme.gridUnit * -2}px;
-    }
-  }
-  .ant-collapse-item.ant-collapse-item-active {
-    .anticon.anticon-right.ant-collapse-arrow > svg {
-      transform: rotate(-90deg) !important;
-    }
-    .ant-collapse-header {
-      border: 0;
-    }
-  }
-  .header {
-    font-size: ${({ theme }) => theme.typography.sizes.l}px;
-    margin-left: ${({ theme }) => theme.gridUnit * -2}px;
-  }
-  .ant-collapse-borderless
-    > .ant-collapse-item
-    > .ant-collapse-content
-    > .ant-collapse-content-box {
-    padding: 0px;
   }
   .field-selections {
-    padding: ${({ theme }) =>
-      `${2 * theme.gridUnit}px ${2 * theme.gridUnit}px ${
-        4 * theme.gridUnit
-      }px`};
+    padding: ${({ theme }) => `0 0 ${4 * theme.gridUnit}px`};
     overflow: auto;
   }
   .field-length {
@@ -139,6 +105,7 @@ export default function DataSourcePanel({
   actions,
 }: Props) {
   const { columns, metrics } = datasource;
+  const [inputValue, setInputValue] = useState('');
   const [lists, setList] = useState({
     columns,
     metrics,
@@ -196,13 +163,14 @@ export default function DataSourcePanel({
           String(a.rankedValue).localeCompare(b.rankedValue),
       }),
     });
-  }, 200);
+  }, FAST_DEBOUNCE);
 
   useEffect(() => {
     setList({
       columns,
       metrics,
     });
+    setInputValue('');
   }, [columns, datasource, metrics]);
 
   const metricSlice = lists.metrics.slice(0, 50);
@@ -213,16 +181,19 @@ export default function DataSourcePanel({
       <input
         type="text"
         onChange={evt => {
+          setInputValue(evt.target.value);
           search(evt.target.value);
         }}
+        value={inputValue}
         className="form-control input-md"
         placeholder={t('Search Metrics & Columns')}
       />
       <div className="field-selections">
         <Collapse
-          bordered={false}
+          bordered
           defaultActiveKey={['metrics', 'column']}
           expandIconPosition="right"
+          ghost
         >
           <Collapse.Panel
             header={<span className="header">{t('Metrics')}</span>}

@@ -45,7 +45,10 @@ RUN cd /app \
 ######################################################################
 # Node stage to deal with static asset construction
 ######################################################################
-FROM node:12 AS superset-node
+FROM node:14 AS superset-node
+
+ARG NPM_VER=7
+RUN npm install -g npm@${NPM_VER}
 
 ARG NPM_BUILD_CMD="build"
 ENV BUILD_CMD=${NPM_BUILD_CMD}
@@ -127,11 +130,5 @@ USER root
 RUN cd /app \
     && pip install --no-cache -r requirements/docker.txt \
     && pip install --no-cache -r requirements/requirements-local.txt || true
-
-RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.29.0/geckodriver-v0.29.0-linux64.tar.gz
-RUN tar -x geckodriver -zf geckodriver-v0.29.0-linux64.tar.gz -O > /usr/bin/geckodriver
-RUN chmod +x /usr/bin/geckodriver
-RUN rm geckodriver-v0.29.0-linux64.tar.gz
-RUN apt-get update
 
 USER superset

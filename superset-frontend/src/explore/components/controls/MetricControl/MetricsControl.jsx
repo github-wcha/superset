@@ -34,7 +34,6 @@ import {
   HeaderContainer,
   LabelsContainer,
 } from 'src/explore/components/OptionControls';
-import DndWithHTML5Backend from 'src/explore/DndContextProvider';
 import MetricDefinitionOption from './MetricDefinitionOption';
 import MetricDefinitionValue from './MetricDefinitionValue';
 import AdhocMetric from './AdhocMetric';
@@ -145,6 +144,7 @@ class MetricsControl extends React.PureComponent {
         onMetricEdit={this.onMetricEdit}
         onRemoveMetric={() => this.onRemoveMetric(index)}
         columns={this.props.columns}
+        datasource={this.props.datasource}
         savedMetrics={this.props.savedMetrics}
         savedMetricsOptions={getOptionsForSavedMetrics(
           this.props.savedMetrics,
@@ -293,6 +293,7 @@ class MetricsControl extends React.PureComponent {
           this.props.value,
           null,
         )}
+        datasource={this.props.datasource}
         savedMetric={{}}
         datasourceType={this.props.datasourceType}
         createNew
@@ -376,7 +377,6 @@ class MetricsControl extends React.PureComponent {
 
   render() {
     const { theme } = this.props;
-
     return (
       <div className="metrics-select">
         <HeaderContainer>
@@ -418,4 +418,4 @@ class MetricsControl extends React.PureComponent {
 MetricsControl.propTypes = propTypes;
 MetricsControl.defaultProps = defaultProps;
 
-export default DndWithHTML5Backend(withTheme(MetricsControl));
+export default withTheme(MetricsControl);

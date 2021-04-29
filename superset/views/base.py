@@ -80,6 +80,8 @@ FRONTEND_CONF_KEYS = (
     "DISPLAY_MAX_ROW",
     "GLOBAL_ASYNC_QUERIES_TRANSPORT",
     "GLOBAL_ASYNC_QUERIES_POLLING_DELAY",
+    "SQLALCHEMY_DOCS_URL",
+    "SQLALCHEMY_DISPLAY_TEXT",
 )
 logger = logging.getLogger(__name__)
 
@@ -243,6 +245,11 @@ def get_user_roles() -> List[Role]:
     return g.user.roles
 
 
+def is_user_admin() -> bool:
+    user_roles = [role.name.lower() for role in list(get_user_roles())]
+    return "admin" in user_roles
+
+
 class BaseSupersetView(BaseView):
     @staticmethod
     def json_response(
@@ -317,6 +324,7 @@ def common_bootstrap_payload() -> Dict[str, Any]:
         "feature_flags": get_feature_flags(),
         "extra_sequential_color_schemes": conf["EXTRA_SEQUENTIAL_COLOR_SCHEMES"],
         "extra_categorical_color_schemes": conf["EXTRA_CATEGORICAL_COLOR_SCHEMES"],
+        "theme_overrides": conf["THEME_OVERRIDES"],
         "menu_data": menu_data(),
     }
 
@@ -471,6 +479,7 @@ class CsvResponse(Response):  # pylint: disable=too-many-ancestors
     """
 
     charset = conf["CSV_EXPORT"].get("encoding", "utf-8")
+    default_mimetype = "text/csv"
 
 
 def check_ownership(obj: Any, raise_if_false: bool = True) -> bool:
@@ -497,8 +506,7 @@ def check_ownership(obj: Any, raise_if_false: bool = True) -> bool:
         if raise_if_false:
             raise security_exception
         return False
-    roles = [r.name for r in get_user_roles()]
-    if "Admin" in roles:
+    if is_user_admin():
         return True
     scoped_session = db.create_scoped_session()
     orig_obj = scoped_session.query(obj.__class__).filter_by(id=obj.id).first()

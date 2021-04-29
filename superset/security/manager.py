@@ -27,6 +27,7 @@ from flask_appbuilder.security.sqla.models import (
     assoc_permissionview_role,
     assoc_user_role,
     PermissionView,
+    Role,
     User,
 )
 from flask_appbuilder.security.views import (
@@ -54,10 +55,12 @@ if TYPE_CHECKING:
     from superset.common.query_context import QueryContext
     from superset.connectors.base.models import BaseDatasource
     from superset.connectors.druid.models import DruidCluster
+    from superset.models.dashboard import Dashboard
     from superset.models.core import Database
     from superset.models.sql_lab import Query
     from superset.sql_parse import Table
     from superset.viz import BaseViz
+
 
 logger = logging.getLogger(__name__)
 
@@ -656,6 +659,13 @@ class SupersetSecurityManager(  # pylint: disable=too-many-public-methods
                         role_from_permissions.append(pvm)
         return role_from_permissions
 
+    def find_roles_by_id(self, role_ids: List[int]) -> List[Role]:
+        """
+        Find a List of models by a list of ids, if defined applies `base_filter`
+        """
+        query = self.get_session.query(Role).filter(Role.id.in_(role_ids))
+        return query.all()
+
     def copy_role(
         self, role_from_name: str, role_to_name: str, merge: bool = True
     ) -> None:
@@ -1088,3 +1098,30 @@ class SupersetSecurityManager(  # pylint: disable=too-many-public-methods
         ids = [f.id for f in self.get_rls_filters(table)]
         ids.sort()  # Combinations rather than permutations
         return ids
+
+    # pylint: disable=no-self-use
+    def raise_for_dashboard_access(self, dashboard: "Dashboard") -> None:
+        """
+        Raise an exception if the user cannot access the dashboard.
+
+        :param dashboard: Dashboard the user wants access to
+        :raises DashboardAccessDeniedError: If the user cannot access the resource
+        """
+        from superset.dashboards.commands.exceptions import DashboardAccessDeniedError
+        from superset.views.base import get_user_roles, is_user_admin
+        from superset.views.utils import is_owner
+        from superset import is_feature_enabled
+
+        if is_feature_enabled("DASHBOARD_RBAC"):
+            has_rbac_access = any(
+                dashboard_role.id in [user_role.id for user_role in get_user_roles()]
+                for dashboard_role in dashboard.roles
+            )
+            can_access = (
+                is_user_admin()
+                or is_owner(dashboard, g.user)
+                or (dashboard.published and has_rbac_access)
+            )
+
+            if not can_access:
+                raise DashboardAccessDeniedError()
